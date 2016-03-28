@@ -1,60 +1,36 @@
-# CiviCRM Docker
+# CiviCRM + Docker
+This application was built for [Snowdrift.coop](https://snowdrift.coop/), it is heavily based on previous work by [djcf](https://github.com/djcf/civicrm-docker). However, it differs from djcf's version in that it focuses on [Drupal](https://www.drupal.org/) and uses [Drush](http://www.drush.org/) instead of [civicrm-buildkit](https://github.com/civicrm/civicrm-buildkit) for installation and configuration.
 
-A small number of Docker containers for CiviCRM exist already, however most are either lacking documentation, do not build successfully, require convoluted steps to install, or do not follow established Docker principles.
-
-In contrast, this container is designed to be:
-
-* Simple -- it installs only what is needed for the buildkit and does not bundle extraneous extras like postfix or sshd
-
-* Composable -- most importantly, the web server and the SQL database server are kept in separate containers. This allows you to swap them out with other containers, modify their workings, or even scale them out to separate hosts.
-
-* Automateable -- the site is built with docker build and run with docker-compose. It requires no manual build steps.
-
-In particular it is superior to my other buildkit-based docker container in that it does not just "naively" run buildkit inside the docker environment. However if you did need to run buildkit naively inside the Docker environment, this is probably the best container to use: https://github.com/djcf/civibuildkit-docker
+The current implementation keeps with the design of being simple, composable, and automateable. Everything should be well documented and straightforward. In addition, I have tried to rely on official builds as much as possible, all of which currently run on Debian Jessie.
 
 # Architecture
+The composition is made up of three separate containers:
 
-This composition is made up of three separate containers:
+* **Application** - based on official [Drupal:7-fpm](https://hub.docker.com/_/drupal) image. Modified to load additional PHP extensions, install Drush, download CiviCRM, and run a post-build initialization script.
+* **Database** - linked from official [MariaDB:latest](https://hub.docker.com/_/mariadb/) image.
+* **Web Server** - based on official [nginx:latest](https://hub.docker.com/_/nginx/) image. Modified to load CiviCRM specific configuration.
 
-* The web server. We use richarvey/nginx-fpm as our base, then modify it to install ssmtp. However, you can swap it for any server container you like. The only requirement is that the server container meets CiviCRM's requirements and has its web root set to the location in the data container where CiviCRM is installed. By default, that's /buildkit/build/CiviCRM.
-
-* The data container. We use colstrom/ubuntu:fish because we like fish but you can base it on any container which uses apt-get. In the build stage we download the CiviCRM buildkit tools, then we use them to download CiviCRM and your CMS, which is Drupal 7 by default. Then we user composer, npm and bower to install CiviCRM depencencies and finalise the image. In the run stage we patch the installer so that the buildkit doesn't worry about talking directly to the SQL server or configuring vhosts, then we wait for the SQL container to be ready before installing the CiviCRM database. The data container exits at this point, its volumes now ready to be consumed by the web server container.
-
-* The SQL container. We use the official mysql image for this, allowing you to use all of the Docker mysql patterns you are used to. For example:
-
-   $ docker run -it --link civi_db:mysql --rm mysql sh -c 'exec mysql -h"$MYSQL_PORT_3306_TCP_ADDR" -P"$MYSQL_PORT_3306_TCP_PORT" -uroot -p"$MYSQL_ENV_MYSQL_ROOT_PASSWORD"'
-   
-Find out more here: https://hub.docker.com/_/mysql/
-
-In theory you could swap this for any database container which provides a database CiviCRM supports. But if you use MySQL, it *must* provide mysql:5.5, not later.
+In theory, the database and web server containers could be swapped for any variants which CiviCRM supports.
 
 # How to Use
+```
+$ git clone https://github.com/altsalt/civicrm-docker && cd civicrm-docker
+```
 
-$ git clone https://github.com/djcf/civicrm-docker; cd civicrm-docker
+Update the environment variable files located underneath /env with your preferences.
 
-Edit docker-compose.yml with your preferences. Since the docker-compose file does not set environment variables, you should also check that each Dockerfile is correctly using the right defaults for your installation.
+When you are ready, installation is as easy as:
+```
+$ docker-compose up
+```
 
-You may want to set up the installation first by configuring docker-compose.yml. In particular, the following environment variables are exposed for you to customise:
+# Acknowledgements
+* Docker for providing official packages for [Drupal](https://hub.docker.com/_/drupal/), [MariaDB](https://hub.docker.com/_/mariadb/), [nginx](https://hub.docker.com/_/nginx/), and all others that went to building these.
+* djcf for their [civicrm-docker](https://github.com/djcf/civicrm-docker) project and related questions floating around the Internet.
+* Josh Lockhart for their [blog post](http://www.newmediacampaigns.com/blog/docker-for-php-developers) which maps a three container Docker image.
+* William Mortada for their  [explaination](https://civicrm.stackexchange.com/questions/4829/is-it-easy-to-upgrade-civicrm-using-drush) of the update procedure via Drush.
+* the Drupal community for [documentation](https://www.drupal.org/node/244924) about hardening an install.
+* md5 for their [gist](https://gist.github.com/md5/d9206eacb5a0ff5d6be0) demonstrating nginx+php-fpm.
+* wsargent for the [Docker Cheat Sheet](https://github.com/wsargent/docker-cheat-sheet).
 
-    MYSQL_ROOT_PASSWORD: 32720283b5fb32
-    MYSQL_DATABASE: civi
-    MYSQL_USER: civi
-    MYSQL_PASSWORD: f90bff2494d
-    WEB_ROOT: /var/www/html
-    SITE_NAME: CiviCRM
-    SITE_URL: localhost
-    SITE_PORT: 80
-    ADMIN_PASS: 123
-    ADMIN_EMAIL: admin@example.com
-    SITE_TYPE=drupal-clean (this is the only one which has been tested)
-    PRIVATE_ROOT: /buildkit/app/private
-
-If you use a different web server container, you may need to adjust the file permissions of either the data container or the web server container. The file permissions for the data container are adjustable with the $GID and $UID variables.
-    
-In theory, you could also change the database type by setting environment variables in the docker-compose file. The environment variables match the ones the buildscript's installation script expects to find.
-
-# To-do
-
-* Rebase off of Alpine linux or -- at the very least -- Debian.
-
-* Test other buildscripts, e.g. D8 and backdrop.
+* and the many giants who have come before me, this world would not be possible without you!

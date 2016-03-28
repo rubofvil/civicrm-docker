@@ -1,42 +1,32 @@
-web:
-        build: web
-        restart: always
-        container_name: civi_web
-        environment:
-                WEB_ROOT: /buildkit/build/CiviCRM
-                VIRTUAL_HOST: host.example.com
-        volumes_from:
-                - app
-        ports:
-                - "8085"
-        links:
-                - db
-app:
-        build: build
-        environment:
-                WEBROOT: /buildkit/build/CiviCRM
-                CIVIVER: master
-                SITE_TYPE: drupal-clean
-                SITE_NAME: CiviCRM
-                CMS_URL: civi.example.com
-                ADMIN_EMAIL: admin@example.com
-                ADMIN_PASS: 123
-        volumes:
-                - /buildkit/build/CiviCRM
-                - /buildkit/app/private
-        volumes_from:
-                - db
-        links:
-                - db
-        container_name: civi_build
-db:
-        image: mysql:5.5
-        expose:
-               - "3306"
-        restart: always
-        environment:
-                MYSQL_ROOT_PASSWORD: asdasdasd
-                MYSQL_DATABASE: civi
-                MYSQL_USER: civi
-                MYSQL_PASSWORD: asdasdasdasd
-        container_name: civi_db
+version: '2'
+
+services:
+  app:
+    build: app
+    depends_on:
+      - db
+    env_file:
+      - env/app.env
+      - env/db.env
+      - env/web.env
+    volumes:
+      - /var/www
+    volumes_from:
+      - db
+  db:
+    image: mariadb:latest
+    env_file:
+      - env/db.env
+    restart: always
+    volumes:
+      - /var/lib/mysql
+  web:
+    build: web
+    env_file:
+      - env/web.env
+    ports:
+      - '80:80'
+      - '443:443'
+    restart: always
+    volumes_from:
+      - app
