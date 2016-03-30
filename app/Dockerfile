@@ -46,6 +46,10 @@ RUN chmod +x /usr/local/bin/civi_install.sh \
   && chmod +x /usr/local/bin/civi_run.sh \
   && chmod +x /usr/local/bin/civi_upgrade.sh
 
+# Install default error pages
+COPY 404.html /var/www/html/404.html
+COPY 50x.html /var/www/html/50x.html
+
 # Cleanup
 RUN apt-get clean \
   && rm -rf \
