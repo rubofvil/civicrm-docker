@@ -26,24 +26,50 @@ drush -y site-install minimal \
   --site-mail=${SITE_MAIL}
 
 # Harden Drupal file/folder permissions
-cd ${WEB_ROOT}
-chown -R root:www-data .
-find . -type d -exec chmod u=rwx,g=rx,o= '{}' \;
-find . -type f -exec chmod u=rw,g=r,o= '{}' \;
-cd ./sites/
-find . -type d -name files -exec chmod ug=rwx,o= '{}' \;
-for d in ./*/files
-do
-  find $d -type d -exec chmod ug=rwx,o= '{}' \;
-  find $d -type f -exec chmod ug=rw,o= '{}' \;
-done
+chown -R root:www-data ${WEB_ROOT}
+# Based on https://www.drupal.org/node/244924
+# find ${WEB_ROOT} -type d -exec chmod u=rwx,g=rx,o= '{}' \;
+# find ${WEB_ROOT} -type f -exec chmod u=rw,g=r,o= '{}' \;
+# find ${WEB_ROOT}/sites -type d -name files -exec chmod ug=rwx,o= '{}' \;
+# find ${WEB_ROOT}/sites/default/files -type d -exec chmod ug=rwx,o= '{}' \;
+# find ${WEB_ROOT}/sites/default/files -type f -exec chmod ug=rw,o= '{}' \;
+#
+# From https://www.drupal.org/node/244924
+# cd ${WEB_ROOT}
+# chown -R root:www-data .
+# find . -type d -exec chmod u=rwx,g=rx,o= '{}' \;
+# find . -type f -exec chmod u=rw,g=r,o= '{}' \;
+# cd ./sites/
+# find . -type d -name files -exec chmod ug=rwx,o= '{}' \;
+# for d in ./*/files
+# do
+#   find $d -type d -exec chmod ug=rwx,o= '{}' \;
+#   find $d -type f -exec chmod ug=rw,o= '{}' \;
+# done
+#
+# Based on https://civicrm.stackexchange.com/questions/168/are-there-recommended-directory-ownership-and-permission-settings-for-civicrm-fi
+# find ${WEB_ROOT}/sites/default -type d -exec chmod ugo=rx '{}' \;
+# find ${WEB_ROOT}/sites/default -type f -name default.settings.php -exec chmod u=rw,go=r '{}' \;
+# find ${WEB_ROOT}/sites/default -type f -name civicrm.settings.php -exec chmod u=rw,go=r '{}' \;
+# find ${WEB_ROOT}/sites/default/files -type d -exec chmod ug=rwx,o= '{}' \;
+# find ${WEB_ROOT}/sites/default/files/civicrm -type d -exec chmod u=rwx,go=rx '{}' \;
+# find ${WEB_ROOT}/sites/default/files/civicrm -type f -exec chmod u=rwx,go=rx '{}' \;
+#
+# From https://civicrm.stackexchange.com/questions/168/are-there-recommended-directory-ownership-and-permission-settings-for-civicrm-fi
+#
+# chmod 555 ${WEB_ROOT}/sites/default
+# chmod 644 ${WEB_ROOT}/sites/default/default.settings.php
+# chmod 644 ${WEB_ROOT}/sites/default/civicrm.settings.php
+# chmod 770 ${WEB_ROOT}/sites/default/files
+# chmod 755 ${WEB_ROOT}/sites/default/files/civicrm
+#
+# Insecure
+# find ${WEB_ROOT}/sites/default/files -type d -exec chmod ugo=rwx '{}' \;
+# find ${WEB_ROOT}/sites/default/files -type f -exec chmod ugo=rwx '{}' \;
 
 echo "Finished installing Drupal."
 
 echo "Installing CiviCRM..."
-
-drush variable-set maintenance_mode 1
-drush cache-clear all
 
 # TODO: there must be a better way...
 mysql \
@@ -70,12 +96,15 @@ drush -y civicrm-install \
 
 rm /var/www/civicrm.tar.gz
 
-drush variable-set maintenance_mode 0
-drush cache-clear all
+# TODO: there must be a better way....
+chown -R root:www-data ${WEB_ROOT}/sites/all/modules/civicrm
+chown -R root:www-data ${WEB_ROOT}/sites/default/files/civicrm
+find ${WEB_ROOT}/sites/default/files/civicrm -type d -exec chmod ugo=rwx '{}' \;
+find ${WEB_ROOT}/sites/default/files/civicrm -type f -exec chmod ugo=rwx '{}' \;
 
 echo "Finished installing CiviCRM."
 
-echo "Cleaning up."
+echo "Cleaning up..."
 
 # TODO: verify environment is clean on next startup
 unset DEFAULT_ACCOUNT
