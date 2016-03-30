@@ -65,8 +65,8 @@ drush -y civicrm-install \
   --tarfile=/var/www/civicrm.tar.gz \
   --destination=sites/all/modules \
   --site_url=${VIRTUAL_HOST} \
-  --ssl=on
-  # --load_generated_data=false
+  --ssl=on \
+  --load_generated_data=0
 
 rm /var/www/civicrm.tar.gz
 
