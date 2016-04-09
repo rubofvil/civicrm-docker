@@ -10,7 +10,7 @@ services:
       - env/db.env
       - env/web.env
     volumes:
-      - /var/www
+      - app-data:/var/www
     volumes_from:
       - db
   db:
@@ -19,7 +19,7 @@ services:
       - env/db.env
     restart: always
     volumes:
-      - /var/lib/mysql
+      - db-data:/var/lib/mysql
   web:
     build: web
     env_file:
@@ -30,3 +30,9 @@ services:
     restart: always
     volumes_from:
       - app
+
+volumes:
+  app-data:
+    driver: local
+  db-data:
+    driver: local
