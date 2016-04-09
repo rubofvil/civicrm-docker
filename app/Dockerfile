@@ -19,11 +19,19 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get update \
     libicu-dev \
     libmcrypt-dev \
     libxml2-dev \
-    mariadb-client
+    mariadb-client \
+    ssmtp
 
 # Install additional PHP extentions
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
   && docker-php-ext-install imap intl mcrypt mysql mysqli soap
+
+# Install ssmtp
+COPY ssmtp.conf /etc/ssmtp/ssmtp.conf
+RUN chown root:mail /etc/ssmtp/ssmtp.conf \
+  && chmod 640 /etc/ssmtp/ssmtp.conf \
+  && usermod -a -G mail www-data \
+  && echo 'sendmail_path = "/usr/sbin/ssmtp -t"' > /usr/local/etc/php/conf.d/mail.ini
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php \
