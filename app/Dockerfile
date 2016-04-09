@@ -13,6 +13,7 @@ RUN sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /usr/local/etc/php-fpm.c
 RUN DEBIAN_FRONTEND="noninteractive" apt-get update \
   && apt-get install -y apt-utils \
   && apt-get install -y \
+    cron \
     libc-client-dev \
     libkrb5-dev \
     libicu-dev \
@@ -38,6 +39,10 @@ RUN curl -fSL http://files.drush.org/drush.phar -o /usr/local/bin/drush \
 ENV CIVICRM_VERSION 4.7.4
 RUN curl -fSL "https://download.civicrm.org/civicrm-${CIVICRM_VERSION}-drupal.tar.gz" -o /var/www/civicrm.tar.gz
 
+# Install default error pages
+COPY 404.html /var/www/html/404.html
+COPY 50x.html /var/www/html/50x.html
+
 # Install maintenance scripts
 COPY civi_install.sh /usr/local/bin/civi_install.sh
 COPY civi_run.sh /usr/local/bin/civi_run.sh
@@ -46,9 +51,12 @@ RUN chmod +x /usr/local/bin/civi_install.sh \
   && chmod +x /usr/local/bin/civi_run.sh \
   && chmod +x /usr/local/bin/civi_upgrade.sh
 
-# Install default error pages
-COPY 404.html /var/www/html/404.html
-COPY 50x.html /var/www/html/50x.html
+# Enable Cron
+COPY civi_cron.sh /usr/local/bin/civi_cron.sh
+COPY crontab /etc/cron.d/crontab
+RUN chmod +x /usr/local/bin/civi_cron.sh \
+  && chmod +x /etc/cron.d/crontab \
+  && crontab /etc/cron.d/crontab
 
 # Cleanup
 RUN apt-get clean \
