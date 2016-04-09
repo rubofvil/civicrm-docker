@@ -99,8 +99,8 @@ rm /var/www/civicrm.tar.gz
 # TODO: there must be a better way....
 chown -R root:www-data ${WEB_ROOT}/sites/all/modules/civicrm
 chown -R root:www-data ${WEB_ROOT}/sites/default/files/civicrm
-find ${WEB_ROOT}/sites/default/files/civicrm -type d -exec chmod ugo=rwx '{}' \;
-find ${WEB_ROOT}/sites/default/files/civicrm -type f -exec chmod ugo=rwx '{}' \;
+find ${WEB_ROOT}/sites/default/files/civicrm -type d -exec chmod ug=rwx,o=rx '{}' \;
+find ${WEB_ROOT}/sites/default/files/civicrm -type f -exec chmod ug=rwx,o=rx '{}' \;
 
 echo "Finished installing CiviCRM."
 
