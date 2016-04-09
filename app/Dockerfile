@@ -36,7 +36,7 @@ RUN curl -fSL http://files.drush.org/drush.phar -o /usr/local/bin/drush \
 # COPY civicrm.drush.inc /usr/share/drush/commands/civicrm.drush.inc
 
 # Download CiviCRM
-ENV CIVICRM_VERSION 4.7.4
+ENV CIVICRM_VERSION 4.7.6
 RUN curl -fSL "https://download.civicrm.org/civicrm-${CIVICRM_VERSION}-drupal.tar.gz" -o /var/www/civicrm.tar.gz
 
 # Install default error pages
