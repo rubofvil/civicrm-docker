@@ -21,7 +21,7 @@ drush -y site-install minimal \
   --account-name=${DEFAULT_ACCOUNT} \
   --account-pass=${DEFAULT_ACCOUNT_PASS} \
   --account-mail=${DEFAULT_ACCOUNT_MAIL} \
-  --db-url="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${MYSQL_DATABASE}" \
+  --db-url="mysqli://${MYSQL_USER}:${MYSQL_PASSWORD}@db/${MYSQL_DATABASE}" \
   --site-name=${SITE_NAME} \
   --site-mail=${SITE_MAIL}
 

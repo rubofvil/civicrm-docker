@@ -24,7 +24,7 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get update \
 
 # Install additional PHP extentions
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
-  && docker-php-ext-install imap intl mcrypt mysql mysqli soap
+  && docker-php-ext-install imap intl mcrypt mysqli soap
 
 # Install ssmtp
 COPY ssmtp.conf /etc/ssmtp/ssmtp.conf
