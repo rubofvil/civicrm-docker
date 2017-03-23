@@ -94,8 +94,6 @@ drush -y civicrm-install \
   --ssl=on \
   --load_generated_data=0
 
-rm /var/www/civicrm.tar.gz
-
 # TODO: there must be a better way....
 chown -R root:www-data ${WEB_ROOT}/sites/all/modules/civicrm
 chown -R root:www-data ${WEB_ROOT}/sites/default/files/civicrm
