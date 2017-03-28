@@ -24,7 +24,7 @@ RUN DEBIAN_FRONTEND="noninteractive" apt-get update \
 
 # Install additional PHP extentions
 RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
-  && docker-php-ext-install imap intl mcrypt mysql mysqli soap
+  && docker-php-ext-install imap intl mcrypt mysqli soap
 
 # Install ssmtp
 COPY ssmtp.conf /etc/ssmtp/ssmtp.conf
@@ -44,7 +44,7 @@ RUN curl -fSL http://files.drush.org/drush.phar -o /usr/local/bin/drush \
 # COPY civicrm.drush.inc /usr/share/drush/commands/civicrm.drush.inc
 
 # Download CiviCRM
-ENV CIVICRM_VERSION 4.7.6
+ENV CIVICRM_VERSION 4.7.17
 RUN curl -fSL "https://download.civicrm.org/civicrm-${CIVICRM_VERSION}-drupal.tar.gz" -o /var/www/civicrm.tar.gz
 
 # Install default error pages
